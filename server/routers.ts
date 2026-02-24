@@ -127,23 +127,6 @@ export const appRouter = router({
           };
         }
       }),
-        const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
-
-        return {
-          sku,
-          description: parsed.description ?? "",
-        const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
-
-        return {
-          sku,
-          description: parsed.description ?? "",
-          tags: (parsed.tags ?? []).join(", "),
-          category: parsed.category ?? category ?? "",
-          suggestedPrice: parsed.suggestedPrice ?? 0,
-          unit: parsed.unit ?? "un",
-          targetAnimals: parsed.targetAnimals ?? "",
-        };
-      }),
   }),
 
   // ─── Clients ─────────────────────────────────────────────────────────────
