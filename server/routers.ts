@@ -93,30 +93,44 @@ export const appRouter = router({
         const randomCode = nanoid(4).toUpperCase();
         const sku = `${categoryCode}-${nameCode}-${randomCode}`;
 
-        // Generate description via LLM
+        // Generate comprehensive product info via LLM
         const response = await invokeLLM({
           messages: [
             {
               role: "system",
-              content: "Você é um especialista em copywriting para pet shops. Gere descrições de produtos otimizadas para venda, com linguagem amigável e persuasiva. Responda em JSON.",
+              content: `Você é um especialista em produtos para pet shops. Analise o nome do produto e gere informações completas otimizadas para venda. Considere o mercado brasileiro de pets. Responda em JSON com informações realistas e úteis.`,
             },
             {
               role: "user",
-              content: `Gere uma descrição de produto e tags para: Nome: "${productName}", Categoria: "${category ?? "Pet Shop"}", Marca: "${brand ?? ""}". Retorne JSON com campos: description (string, máximo 200 chars), tags (array de strings, máximo 5 tags).`,
+              content: `Analise este produto para pet shop: "${productName}". ${category ? `Categoria sugerida: ${category}.` : ''} ${brand ? `Marca: ${brand}.` : ''}
+
+Retorne JSON com:
+- description: descrição persuasiva (máximo 200 caracteres)
+- tags: array de até 5 tags relevantes
+- category: categoria mais apropriada (Alimentação, Higiene, Acessórios, Medicamentos, Brinquedos, Camas e Casinhas, Coleiras e Guias, Outros)
+- suggestedPrice: preço sugerido em reais (número, considere mercado brasileiro)
+- unit: unidade de venda (un, kg, g, ml, l, pacote, caixa, etc.)
+- targetAnimals: animais-alvo (cachorro, gato, pássaro, outros ou combinação)
+
+Seja específico e realista baseado no nome do produto.`,
             },
           ],
           response_format: {
             type: "json_schema",
             json_schema: {
-              name: "product_info",
+              name: "product_complete_info",
               strict: true,
               schema: {
                 type: "object",
                 properties: {
-                  description: { type: "string" },
-                  tags: { type: "array", items: { type: "string" } },
+                  description: { type: "string", maxLength: 200 },
+                  tags: { type: "array", items: { type: "string" }, maxItems: 5 },
+                  category: { type: "string", enum: ["Alimentação", "Higiene", "Acessórios", "Medicamentos", "Brinquedos", "Camas e Casinhas", "Coleiras e Guias", "Outros"] },
+                  suggestedPrice: { type: "number", minimum: 1, maximum: 1000 },
+                  unit: { type: "string", maxLength: 20 },
+                  targetAnimals: { type: "string" },
                 },
-                required: ["description", "tags"],
+                required: ["description", "tags", "category", "suggestedPrice", "unit", "targetAnimals"],
                 additionalProperties: false,
               },
             },
@@ -130,6 +144,10 @@ export const appRouter = router({
           sku,
           description: parsed.description ?? "",
           tags: (parsed.tags ?? []).join(", "),
+          category: parsed.category ?? category ?? "",
+          suggestedPrice: parsed.suggestedPrice ?? 0,
+          unit: parsed.unit ?? "un",
+          targetAnimals: parsed.targetAnimals ?? "",
         };
       }),
   }),

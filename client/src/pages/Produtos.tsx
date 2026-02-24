@@ -72,8 +72,8 @@ const productSchema = z.object({
   brand: z.string().optional(),
   price: z.string().min(1, "Preço obrigatório"),
   costPrice: z.string().optional(),
-  stock: z.number().min(0).optional(),
-  minStock: z.number().min(0).optional(),
+  stock: z.union([z.number(), z.string()]).optional().transform(val => val === "" ? 0 : Number(val)),
+  minStock: z.union([z.number(), z.string()]).optional().transform(val => val === "" ? 5 : Number(val)),
   unit: z.string().optional(),
   tags: z.string().optional(),
   active: z.boolean().optional(),
@@ -187,7 +187,10 @@ export default function Produtos() {
       form.setValue("sku", result.sku);
       form.setValue("description", result.description);
       form.setValue("tags", result.tags);
-      toast.success("Dados gerados pela IA!");
+      if (result.category) form.setValue("category", result.category);
+      if (result.suggestedPrice) form.setValue("price", result.suggestedPrice.toString());
+      if (result.unit) form.setValue("unit", result.unit);
+      toast.success("Dados gerados pela IA com sucesso!");
     } catch {
       toast.error("Erro ao gerar dados com IA");
     } finally {
