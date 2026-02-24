@@ -181,18 +181,31 @@ export default function Produtos() {
     try {
       const result = await generateAI.mutateAsync({
         productName: name,
-        category: form.getValues("category") || undefined,
-        brand: form.getValues("brand") || undefined,
       });
+
+      // Preenchr todos os campos com dados do assistente
       form.setValue("sku", result.sku);
-      form.setValue("description", result.description);
-      form.setValue("tags", result.tags);
-      if (result.category) form.setValue("category", result.category);
-      if (result.suggestedPrice) form.setValue("price", result.suggestedPrice.toString());
-      if (result.unit) form.setValue("unit", result.unit);
-      toast.success("Dados gerados pela IA com sucesso!");
-    } catch {
-      toast.error("Erro ao gerar dados com IA");
+      form.setValue("description", result.descricao);
+      form.setValue("category", result.categoria);
+      form.setValue("brand", result.marca);
+      form.setValue("tags", result.tags.join(", "));
+      form.setValue("unit", result.unidade);
+      
+      // Campos opcionais
+      if (result.precoSugerido) {
+        form.setValue("price", result.precoSugerido.toString());
+      }
+      if (result.custoEstimado) {
+        form.setValue("costPrice", result.custoEstimado.toString());
+      }
+      if (result.estoqueMinimoSugerido) {
+        form.setValue("minStock", result.estoqueMinimoSugerido);
+      }
+
+      toast.success("Informações do produto geradas pela IA com sucesso!");
+    } catch (error) {
+      console.error("Erro ao gerar dados com IA:", error);
+      toast.error("Erro ao gerar dados com IA. Tente novamente.");
     } finally {
       setIsGeneratingAI(false);
     }

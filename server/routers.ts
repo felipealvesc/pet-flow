@@ -5,6 +5,8 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { invokeLLM } from "./_core/llm";
+import { getAssistantService } from "./_core/openaiAssistant";
+import { validateProductInfo } from "./_core/productValidator";
 import {
   getProducts, getProductById, createProduct, updateProduct, deleteProduct, getLowStockProducts,
   getClients, getClientById, createClient, updateClient, deleteClient, getInactiveClients,
@@ -83,61 +85,53 @@ export const appRouter = router({
     lowStock: protectedProcedure.query(() => getLowStockProducts()),
 
     generateAI: protectedProcedure
-      .input(z.object({ productName: z.string(), category: z.string().optional(), brand: z.string().optional() }))
+      .input(z.object({ productName: z.string() }))
       .mutation(async ({ input }) => {
-        const { productName, category, brand } = input;
+        const { productName } = input;
 
-        // Generate SKU
-        const categoryCode = (category ?? "PET").substring(0, 3).toUpperCase();
-        const nameCode = productName.replace(/\s+/g, "").substring(0, 4).toUpperCase();
-        const randomCode = nanoid(4).toUpperCase();
-        const sku = `${categoryCode}-${nameCode}-${randomCode}`;
+        try {
+          // Usar o assistente OpenAI para extrair informações completas
+          const assistantService = getAssistantService();
+          const productInfo = await assistantService.extractProductInfo(productName);
 
-        // Generate comprehensive product info via LLM
-        const response = await invokeLLM({
-          messages: [
-            {
-              role: "system",
-              content: `Você é um especialista em produtos para pet shops. Analise o nome do produto e gere informações completas otimizadas para venda. Considere o mercado brasileiro de pets. Responda em JSON com informações realistas e úteis.`,
-            },
-            {
-              role: "user",
-              content: `Analise este produto para pet shop: "${productName}". ${category ? `Categoria sugerida: ${category}.` : ''} ${brand ? `Marca: ${brand}.` : ''}
+          // Validar e garantir que temos dados seguros
+          const validated = validateProductInfo(productInfo);
 
-Retorne JSON com:
-- description: descrição persuasiva (máximo 200 caracteres)
-- tags: array de até 5 tags relevantes
-- category: categoria mais apropriada (Alimentação, Higiene, Acessórios, Medicamentos, Brinquedos, Camas e Casinhas, Coleiras e Guias, Outros)
-- suggestedPrice: preço sugerido em reais (número, considere mercado brasileiro)
-- unit: unidade de venda (un, kg, g, ml, l, pacote, caixa, etc.)
-- targetAnimals: animais-alvo (cachorro, gato, pássaro, outros ou combinação)
+          return {
+            nomeProduto: validated.nomeProduto,
+            sku: validated.sku,
+            categoria: validated.categoria,
+            marca: validated.marca,
+            descricao: validated.descricao,
+            precoSugerido: validated.precoSugerido,
+            custoEstimado: validated.custoEstimado,
+            estoqueMinimoSugerido: validated.estoqueMinimoSugerido,
+            unidade: validated.unidade,
+            tags: validated.tags,
+          };
+        } catch (error) {
+          console.error("[generateAI] Error:", error);
 
-Seja específico e realista baseado no nome do produto.`,
-            },
-          ],
-          response_format: {
-            type: "json_schema",
-            json_schema: {
-              name: "product_complete_info",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  description: { type: "string", maxLength: 200 },
-                  tags: { type: "array", items: { type: "string" }, maxItems: 5 },
-                  category: { type: "string", enum: ["Alimentação", "Higiene", "Acessórios", "Medicamentos", "Brinquedos", "Camas e Casinhas", "Coleiras e Guias", "Outros"] },
-                  suggestedPrice: { type: "number", minimum: 1, maximum: 1000 },
-                  unit: { type: "string", maxLength: 20 },
-                  targetAnimals: { type: "string" },
-                },
-                required: ["description", "tags", "category", "suggestedPrice", "unit", "targetAnimals"],
-                additionalProperties: false,
-              },
-            },
-          },
-        });
+          // Retornar dados seguros mesmo em caso de erro
+          return {
+            nomeProduto: productName,
+            sku: `SKU-${nanoid(6).toUpperCase()}`,
+            categoria: "Produtos",
+            marca: "Genérica",
+            descricao: `${productName} - Descrição gerada com dados padrão`,
+            precoSugerido: null,
+            custoEstimado: null,
+            estoqueMinimoSugerido: 5,
+            unidade: "Unidade",
+            tags: productName.split(" ").slice(0, 5).filter(t => t.length > 0),
+          };
+        }
+      }),
+        const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
 
-        const content = response.choices[0]?.message?.content ?? "{}";
+        return {
+          sku,
+          description: parsed.description ?? "",
         const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
 
         return {
