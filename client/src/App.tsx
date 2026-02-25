@@ -11,6 +11,14 @@ import BanhoTosa from "./pages/BanhoTosa";
 import Clientes from "./pages/Clientes";
 import Pets from "./pages/Pets";
 import Marketing from "./pages/Marketing";
+import Cadastros from "./pages/Cadastros";
+import ClientesEFornecedores from "./pages/ClientesEFornecedores";
+import Vendedores from "./pages/Vendedores";
+import Funcionarios from "./pages/Funcionarios";
+import ContasFinanceiras from "./pages/ContasFinanceiras";
+import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
+import FormasPagamento from "./pages/FormasPagamento";
+import RelatoriosCadastros from "./pages/RelatoriosCadastros";
 
 function Router() {
   return (
@@ -23,6 +31,46 @@ function Router() {
       <Route path="/produtos">
         <DashboardLayout>
           <Produtos />
+        </DashboardLayout>
+      </Route>
+      <Route path="/cadastros">
+        <DashboardLayout>
+          <Cadastros />
+        </DashboardLayout>
+      </Route>
+      <Route path="/clientes-fornecedores">
+        <DashboardLayout>
+          <ClientesEFornecedores />
+        </DashboardLayout>
+      </Route>
+      <Route path="/vendedores">
+        <DashboardLayout>
+          <Vendedores />
+        </DashboardLayout>
+      </Route>
+      <Route path="/funcionarios">
+        <DashboardLayout>
+          <Funcionarios />
+        </DashboardLayout>
+      </Route>
+      <Route path="/contas-financeiras">
+        <DashboardLayout>
+          <ContasFinanceiras />
+        </DashboardLayout>
+      </Route>
+      <Route path="/categorias-financeiras">
+        <DashboardLayout>
+          <CategoriasFinanceiras />
+        </DashboardLayout>
+      </Route>
+      <Route path="/formas-pagamento">
+        <DashboardLayout>
+          <FormasPagamento />
+        </DashboardLayout>
+      </Route>
+      <Route path="/relatorios-cadastros">
+        <DashboardLayout>
+          <RelatoriosCadastros />
         </DashboardLayout>
       </Route>
       <Route path="/banho-tosa">

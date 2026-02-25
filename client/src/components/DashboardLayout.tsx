@@ -55,6 +55,18 @@ const managementMenuItems = [
   { icon: Megaphone, label: "Marketing", path: "/marketing" },
 ];
 
+const cadastrosMenuItems = [
+  { icon: Package, label: "Cadastros", path: "/cadastros" },
+  { icon: Package, label: "Produtos", path: "/produtos" },
+  { icon: Users, label: "Clientes e fornecedores", path: "/clientes-fornecedores" },
+  { icon: Users, label: "Vendedores", path: "/vendedores" },
+  { icon: Users, label: "Funcionários", path: "/funcionarios" },
+  { icon: PanelLeft, label: "Contas Financeiras", path: "/contas-financeiras" },
+  { icon: Settings, label: "Categorias Financeiras", path: "/categorias-financeiras" },
+  { icon: Settings, label: "Formas de pagamento", path: "/formas-pagamento" },
+  { icon: PanelLeft, label: "Ver relatórios de cadastros", path: "/relatorios-cadastros" },
+];
+
 const SIDEBAR_WIDTH_KEY = "petflow-sidebar-width";
 const DEFAULT_WIDTH = 260;
 const MIN_WIDTH = 200;
@@ -229,6 +241,17 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
               )}
               <SidebarMenu className="px-2 gap-0.5">
                 {mainMenuItems.map(item => <NavItem key={item.path} item={item} />)}
+              </SidebarMenu>
+            </SidebarGroup>
+
+            <SidebarGroup className="mt-4">
+              {!isCollapsed && (
+                <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-wider font-semibold px-4 mb-1">
+                  Cadastros
+                </SidebarGroupLabel>
+              )}
+              <SidebarMenu className="px-2 gap-0.5">
+                {cadastrosMenuItems.map(item => <NavItem key={item.path} item={item} />)}
               </SidebarMenu>
             </SidebarGroup>
 
